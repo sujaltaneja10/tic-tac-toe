@@ -57,7 +57,11 @@ const GameBoard = (function () {
 
     const putMarker = (row, col, marker) => arr[row][col] = marker;
 
-    const validMove = (row, col) => (arr[row][col] === '-');
+    const validMove = (row, col) => {
+        if (checkWinner()) return 0;
+        else if (arr[row][col] === '-') return 1;
+        else return 0;
+    }
 
     const checkWinner = () => {
         for (let i = 0; i < rows; i++) {
