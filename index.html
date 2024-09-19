@@ -4,10 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
-    <script src="script.js"></script>
-</body>
+    <section>
+        <h2>Fill Player Info</h2>
+        <div class="inside">
+            <label for="player1">Player 1 : </label>
+            <input type="text" id="player1">
+        </div>
+        <div class="inside">
+        <label for="player2">Player 2 : </label>
+        <input type="text" id="player2">
+        </div>
+        <a href="new.html">
+            <button class="submit">ENTER</button>
+        </a>
+    </section>
+    <script>
+        document.querySelector('.submit').addEventListener('click', () => {
+            const player1Name = document.querySelector("#player1").value;
+            const player2Name = document.querySelector("#player2").value;
+
+            localStorage.setItem('player1', player1Name);
+            localStorage.setItem('player2', player2Name);
+            
+            window.location.href = 'new.html';
+        });
+    </script>
 </body>
 </html>

@@ -2,6 +2,8 @@
 // change checkWinner() logic
 // created more arrow functions
 // removed 'this' , bcz, it is not used in factories.
+// modules are accessed directly from oytside. ex: 'gameBoard.validMove()'
+// factories are accessed like functions, by creating a variable and storing them.
 // refactored to use factories and modules efficiently.
 
 const Player = function(name, marker) {
@@ -12,16 +14,46 @@ const GameBoard = (function () {
     let arr = [];
     const rows = 3;
     const cols = 3;
+    let turn = 0;
+
+    let grid, child, resetBtn, backBtn, playerTurn;
 
     const createBoard = () => arr = [['-', '-', '-'], ['-', '-', '-'], ['-', '-', '-']];
 
-    const printBoard = () => console.log(arr.map(e => [...e]));
+    const currentPlayer = () => turn === 0 ? player1 : player2;
+
+    const switchPlayerTurn = () => turn = turn === 0 ? 1 : 0;
+
+    const updatePlayerBoard = () => {
+        playerTurn.textContent = `${currentPlayer().name}'s Turn`;
+    }
+
+    const addHtml = () => {
+        grid = document.querySelector('.grid');
+        child = document.querySelectorAll('.child');
+        resetBtn = document.querySelector('.reset');
+        backBtn = document.querySelector('.back');
+        playerTurn = document.querySelector('.playerTurn');
+    }
+
+    const inputPosition = () => {
+        updatePlayerBoard()
+        child.forEach((element, index) => {
+            element.addEventListener('click', () => {
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                if (validMove(row, col)) {
+                    putMarker(row, col, currentPlayer().marker);
+                    element.textContent = currentPlayer().marker;
+                }
+                if (decision()) return;
+            })
+        });
+    }
 
     const checkEmptySpaces = () => arr.flat().includes('-');
 
-    const putMarker = (row, col, marker) => {
-        if (validMove(row, col)) arr[row][col] = marker;
-    };
+    const putMarker = (row, col, marker) => arr[row][col] = marker;
 
     const validMove = (row, col) => (arr[row][col] === '-');
 
@@ -37,62 +69,55 @@ const GameBoard = (function () {
         return 0;
     }
 
-    return { createBoard, printBoard, checkEmptySpaces, putMarker, validMove, checkWinner };
+    const decision = () => {
+        const winner = checkWinner();
+        if (showDecision(winner)) return 1;
+        else {
+            switchPlayerTurn();
+            updatePlayerBoard();
+        }
+    };
+
+    const showDecision = (winner) => {
+        if (winner !== 0) {
+            playerTurn.textContent = `Winner is ${winner === 1 ? player1.name : player2.name}`;
+            return 1;
+        }
+        if (!checkEmptySpaces()) {
+            playerTurn.textContent = 'Match is drawn';
+            return 1;
+        }
+    }
+
+    const reset = () => {
+        resetBtn.addEventListener('click', () => {
+            createBoard();
+            child.forEach(cell => {
+                cell.textContent = '';
+            });
+            turn = 0;
+            updatePlayerBoard();
+        });
+    }
+
+    return { createBoard, inputPosition, addHtml, reset };
 })()
 
 const GameController = function() {
-    let inputRow = 0;
-    let inputCol = 0;
-    let turn = 1;
-
-    const inputPosition = () => {
-        inputRow = +prompt(`Player ${turn + 1} : ${currentPlayer().name} : Enter row number (1-3): `) - 1;
-        inputCol = +prompt(`Player ${turn + 1} : ${currentPlayer().name} : Enter column number (1-3): `) - 1;
-        if (!GameBoard.validMove(inputRow, inputCol)) inputPosition();
-    };
-
-    const currentPlayer = () => turn === 0 ? player1 : player2;
-
-    const switchPlayerTurn = () => turn === 0 ? turn = 1 : turn = 0;
-
-    const endGame = () => console.log('Thanks for playing');
-
-    const decision = () => {
-        if (GameBoard.checkWinner() === 0) {
-            alert('Match is drawn');
-        }
-        else {
-            alert(`Winner is ${currentPlayer().name}`);
-        }
-    }
-
-    const askForNewGame = () => {
-        inputRow = 0;
-        inputCol = 0;
-        turn = 0;
-        ((prompt('Press "YES" for new game : ')).toLowerCase() === 'yes') ? newGame() : endGame();
-    }
-
-    const newRound = () => {
-        inputPosition();
-        GameBoard.putMarker(inputRow, inputCol, currentPlayer().marker);
-        GameBoard.printBoard();
-    }
-
     const newGame = () => {
         GameBoard.createBoard();
-        while (GameBoard.checkEmptySpaces() && (!GameBoard.checkWinner())) {
-            switchPlayerTurn();
-            newRound();
-        }
-        decision();
-        askForNewGame();
+        GameBoard.addHtml();
+        GameBoard.inputPosition();
+        GameBoard.reset();
     }
     return { newGame };
 }
 
-const player1 = Player(prompt("Enter name of player 1, 'X'"), 'X');
-const player2 = Player(prompt("Enter name of player 2, 'O'"), 'O');
+const player1Name = localStorage.getItem('player1');
+const player2Name = localStorage.getItem('player2');
+
+const player1 = Player(player1Name, 'X');
+const player2 = Player(player2Name, 'O');
 
 const game = GameController();
 game.newGame();
