@@ -45,6 +45,8 @@ const GameBoard = (function () {
                 if (validMove(row, col)) {
                     putMarker(row, col, currentPlayer().marker);
                     element.textContent = currentPlayer().marker;
+                    switchPlayerTurn();
+                    updatePlayerBoard();
                 }
                 if (decision()) return;
             })
@@ -72,10 +74,6 @@ const GameBoard = (function () {
     const decision = () => {
         const winner = checkWinner();
         if (showDecision(winner)) return 1;
-        else {
-            switchPlayerTurn();
-            updatePlayerBoard();
-        }
     };
 
     const showDecision = (winner) => {
@@ -113,8 +111,11 @@ const GameController = function() {
     return { newGame };
 }
 
-const player1Name = localStorage.getItem('player1');
-const player2Name = localStorage.getItem('player2');
+let player1Name = localStorage.getItem('player1');
+let player2Name = localStorage.getItem('player2');
+
+if (player1Name == '') player1Name = 'Player 1';
+if (player2Name == '') player2Name = 'Player 2';
 
 const player1 = Player(player1Name, 'X');
 const player2 = Player(player2Name, 'O');
